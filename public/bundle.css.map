@@ -1,0 +1,12 @@
+{
+  "version": 3,
+  "file": "bundle.css",
+  "sources": [
+    "../src/App.svelte"
+  ],
+  "sourcesContent": [
+    "<script>\n  let countries = [\n    [\"leeg\", \"leeg\", \"nl\"],\n    [\"be\", \"vs\", \"leeg\"],\n    [\"fa\", \"leeg\", \"es\"]\n  ];\n\n  let selected = \"es\";\n\n  const selectCountry = function(el, country) {\n    country != \"leeg\" ? (selected = country) : \"\";\n    // el.fromElement.scrollIntoView({\n    //   behavior: \"smooth\",\n    //   block: \"end\",\n    //   inline: \"nearest\"\n    // });\n    // console.log(el);\n  };\n</script>\n\n<style>\n  .country-row {\n    display: grid;\n    grid-template-rows: 50px 50px 50px;\n    grid-template-columns: 200px 200px 200px;\n  }\n  .country {\n    background-color: lightgrey;\n    margin: 10px;\n  }\n\n  .selected {\n    /* zoom: 150%; */\n    transform: scale(2.7);\n    /* position: relative; */\n    /* z-index: 1; */\n  }\n</style>\n\n{#each countries as countryrow}\n  <div class=\"country-row\">\n    {#each countryrow as country}\n      <div\n        id={country}\n        on:mouseover={el => selectCountry(el, country)}\n        class=\"{selected === country ? 'selected' : 'not-selected'} country\">\n        {country}\n      </div>\n    {/each}\n  </div>\n{/each}\n"
+  ],
+  "names": [],
+  "mappings": "AAqBE,YAAY,cAAC,CAAC,AACZ,OAAO,CAAE,IAAI,CACb,kBAAkB,CAAE,IAAI,CAAC,IAAI,CAAC,IAAI,CAClC,qBAAqB,CAAE,KAAK,CAAC,KAAK,CAAC,KAAK,AAC1C,CAAC,AACD,QAAQ,cAAC,CAAC,AACR,gBAAgB,CAAE,SAAS,CAC3B,MAAM,CAAE,IAAI,AACd,CAAC,AAED,SAAS,cAAC,CAAC,AAET,SAAS,CAAE,MAAM,GAAG,CAAC,AAGvB,CAAC"
+}
