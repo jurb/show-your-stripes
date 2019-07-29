@@ -1,9 +1,10 @@
-.centered.svelte-13wiv3p{display:flex;justify-content:center;align-items:center}.country-row.svelte-13wiv3p{display:grid;grid-template-columns:repeat(31, 34px);grid-template-rows:repeat(23, 34px);grid-gap:3px;border:1px solid rgba(0, 0, 0, 0.1)}@media all and (-ms-high-contrast: none){.country-row.svelte-13wiv3p{display:-ms-grid;-ms-grid-template-columns:34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx,
+.centered.svelte-nf4fws{display:flex;position:relative;justify-content:center;align-items:center}.country-row.svelte-nf4fws{display:grid;grid-template-columns:repeat(31, 34px);grid-template-rows:repeat(23, 34px);grid-gap:3px;border:1px solid rgba(0, 0, 0, 0.1)}@media all and (-ms-high-contrast: none){.country-row.svelte-nf4fws{display:-ms-grid;-ms-grid-template-columns:34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx,
         34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx,
         34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx,
         34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx;-ms-grid-template-rows:34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx,
         34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx,
         34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx, 34pxpx,
-        34pxpx;-ms-grid-gap:3px}}.country.svelte-13wiv3p{background-color:white;border:1px solid white}.unknown-country.svelte-13wiv3p{background-color:lightgrey;border:1px solid white}.selected.svelte-13wiv3p{border:1px solid rgba(0, 0, 0, 0.1)}
+        34pxpx;-ms-grid-gap:3px}}.country.svelte-nf4fws{background-color:white;border:1px solid white}.unknown-country.svelte-nf4fws{background-color:lightgrey;border:1px solid white}.selected.svelte-nf4fws{border:1px solid rgba(0, 0, 0, 0.1)}
+.modal-background.svelte-m4xiuc{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0, 0, 0, 0.3)}.modal.svelte-m4xiuc{position:absolute;left:50%;top:50%;width:calc(100vw - 4em);max-width:32em;max-height:calc(100vh - 4em);overflow:auto;transform:translate(-50%, -50%);padding:1em;border-radius:0.2em;background:white}button.svelte-m4xiuc{display:block}
 
 /*# sourceMappingURL=bundle.css.map */

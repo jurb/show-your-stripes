@@ -4,6 +4,12 @@ var app = (function () {
     'use strict';
 
     function noop() { }
+    function assign(tar, src) {
+        // @ts-ignore
+        for (const k in src)
+            tar[k] = src[k];
+        return tar;
+    }
     function add_location(element, file, line, column, char) {
         element.__svelte_meta = {
             loc: { file, line, column, char }
@@ -23,6 +29,22 @@ var app = (function () {
     }
     function safe_not_equal(a, b) {
         return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
+    }
+    function create_slot(definition, ctx, fn) {
+        if (definition) {
+            const slot_ctx = get_slot_context(definition, ctx, fn);
+            return definition[0](slot_ctx);
+        }
+    }
+    function get_slot_context(definition, ctx, fn) {
+        return definition[1]
+            ? assign({}, assign(ctx.$$scope.ctx, definition[1](fn ? fn(ctx) : {})))
+            : ctx.$$scope.ctx;
+    }
+    function get_slot_changes(definition, ctx, changed, fn) {
+        return definition[1]
+            ? assign({}, assign(ctx.$$scope.changed || {}, definition[1](fn ? fn(changed) : {})))
+            : ctx.$$scope.changed || {};
     }
 
     function append(target, node) {
@@ -49,6 +71,9 @@ var app = (function () {
     function space() {
         return text(' ');
     }
+    function empty() {
+        return text('');
+    }
     function listen(node, event, handler, options) {
         node.addEventListener(event, handler, options);
         return () => node.removeEventListener(event, handler, options);
@@ -70,13 +95,37 @@ var app = (function () {
     function children(element) {
         return Array.from(element.childNodes);
     }
+    function set_data(text, data) {
+        data = '' + data;
+        if (text.data !== data)
+            text.data = data;
+    }
     function set_style(node, key, value) {
         node.style.setProperty(key, value);
+    }
+    function custom_event(type, detail) {
+        const e = document.createEvent('CustomEvent');
+        e.initCustomEvent(type, false, false, detail);
+        return e;
     }
 
     let current_component;
     function set_current_component(component) {
         current_component = component;
+    }
+    function createEventDispatcher() {
+        const component = current_component;
+        return (type, detail) => {
+            const callbacks = component.$$.callbacks[type];
+            if (callbacks) {
+                // TODO are there situations where events could be dispatched
+                // in a server (non-DOM) environment?
+                const event = custom_event(type, detail);
+                callbacks.slice().forEach(fn => {
+                    fn.call(component, event);
+                });
+            }
+        };
     }
 
     const dirty_components = [];
@@ -134,10 +183,40 @@ var app = (function () {
         }
     }
     const outroing = new Set();
+    let outros;
+    function group_outros() {
+        outros = {
+            r: 0,
+            c: [],
+            p: outros // parent group
+        };
+    }
+    function check_outros() {
+        if (!outros.r) {
+            run_all(outros.c);
+        }
+        outros = outros.p;
+    }
     function transition_in(block, local) {
         if (block && block.i) {
             outroing.delete(block);
             block.i(local);
+        }
+    }
+    function transition_out(block, local, detach, callback) {
+        if (block && block.o) {
+            if (outroing.has(block))
+                return;
+            outroing.add(block);
+            outros.c.push(() => {
+                outroing.delete(block);
+                if (callback) {
+                    if (detach)
+                        block.d(1);
+                    callback();
+                }
+            });
+            block.o(local);
         }
     }
     function mount_component(component, target, anchor) {
@@ -8106,693 +8185,165 @@ var app = (function () {
         region: "",
         "sub-region": ""
       }
-      // {
-      //   coordinates: "23, 0",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 0,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 1",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 1,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 2",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 2,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 3",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 3,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 4",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 4,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 5",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 5,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 6",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 6,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 7",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 7,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 8",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 8,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 9",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 9,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 10",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 10,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 11",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 11,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 12",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 12,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 13",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 13,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 14",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 14,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 15",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 15,
-      //   "alpha-2": "AQ",
-      //   "alpha-3": "ATA",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 16",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 16,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 17",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 17,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 18",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 18,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 19",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 19,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 20",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 20,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 21",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 21,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 22",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 22,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 23",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 23,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 24",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 24,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 25",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 25,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 26",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 26,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 27",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 27,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 28",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 28,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 29",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 29,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "23, 30",
-      //   name: "",
-      //   filename: "",
-      //   row: 23,
-      //   column: 30,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 0",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 0,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 1",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 1,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 2",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 2,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 3",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 3,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 4",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 4,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 5",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 5,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 6",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 6,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 7",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 7,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 8",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 8,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 9",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 9,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 10",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 10,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 11",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 11,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 12",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 12,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 13",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 13,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 14",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 14,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 15",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 15,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 16",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 16,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 17",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 17,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 18",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 18,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 19",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 19,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 20",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 20,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 21",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 21,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 22",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 22,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 23",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 23,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 24",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 24,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 25",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 25,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 26",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 26,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 27",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 27,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 28",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 28,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 29",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 29,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // },
-      // {
-      //   coordinates: "24, 30",
-      //   name: "",
-      //   filename: "",
-      //   row: 24,
-      //   column: 30,
-      //   "alpha-2": "",
-      //   "alpha-3": "",
-      //   region: "",
-      //   "sub-region": ""
-      // }
     ];
+
+    /* src/Modal.svelte generated by Svelte v3.6.8 */
+
+    const file = "src/Modal.svelte";
+
+    const get_header_slot_changes = () => ({});
+    const get_header_slot_context = () => ({});
+
+    function create_fragment(ctx) {
+    	var div0, t0, div1, t1, hr0, t2, t3, hr1, t4, button, current, dispose;
+
+    	const header_slot_1 = ctx.$$slots.header;
+    	const header_slot = create_slot(header_slot_1, ctx, get_header_slot_context);
+
+    	const default_slot_1 = ctx.$$slots.default;
+    	const default_slot = create_slot(default_slot_1, ctx, null);
+
+    	return {
+    		c: function create() {
+    			div0 = element("div");
+    			t0 = space();
+    			div1 = element("div");
+
+    			if (header_slot) header_slot.c();
+    			t1 = space();
+    			hr0 = element("hr");
+    			t2 = space();
+
+    			if (default_slot) default_slot.c();
+    			t3 = space();
+    			hr1 = element("hr");
+    			t4 = space();
+    			button = element("button");
+    			button.textContent = "close modal";
+    			attr(div0, "class", "modal-background svelte-m4xiuc");
+    			add_location(div0, file, 37, 0, 620);
+
+    			add_location(hr0, file, 41, 2, 736);
+
+    			add_location(hr1, file, 43, 2, 756);
+    			attr(button, "class", "svelte-m4xiuc");
+    			add_location(button, file, 45, 2, 766);
+    			attr(div1, "class", "modal svelte-m4xiuc");
+    			add_location(div1, file, 39, 0, 689);
+
+    			dispose = [
+    				listen(div0, "click", ctx.click_handler),
+    				listen(button, "click", ctx.click_handler_1)
+    			];
+    		},
+
+    		l: function claim(nodes) {
+    			if (header_slot) header_slot.l(div1_nodes);
+
+    			if (default_slot) default_slot.l(div1_nodes);
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+
+    		m: function mount(target, anchor) {
+    			insert(target, div0, anchor);
+    			insert(target, t0, anchor);
+    			insert(target, div1, anchor);
+
+    			if (header_slot) {
+    				header_slot.m(div1, null);
+    			}
+
+    			append(div1, t1);
+    			append(div1, hr0);
+    			append(div1, t2);
+
+    			if (default_slot) {
+    				default_slot.m(div1, null);
+    			}
+
+    			append(div1, t3);
+    			append(div1, hr1);
+    			append(div1, t4);
+    			append(div1, button);
+    			current = true;
+    		},
+
+    		p: function update(changed, ctx) {
+    			if (header_slot && header_slot.p && changed.$$scope) {
+    				header_slot.p(get_slot_changes(header_slot_1, ctx, changed, get_header_slot_changes), get_slot_context(header_slot_1, ctx, get_header_slot_context));
+    			}
+
+    			if (default_slot && default_slot.p && changed.$$scope) {
+    				default_slot.p(get_slot_changes(default_slot_1, ctx, changed, null), get_slot_context(default_slot_1, ctx, null));
+    			}
+    		},
+
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(header_slot, local);
+    			transition_in(default_slot, local);
+    			current = true;
+    		},
+
+    		o: function outro(local) {
+    			transition_out(header_slot, local);
+    			transition_out(default_slot, local);
+    			current = false;
+    		},
+
+    		d: function destroy(detaching) {
+    			if (detaching) {
+    				detach(div0);
+    				detach(t0);
+    				detach(div1);
+    			}
+
+    			if (header_slot) header_slot.d(detaching);
+
+    			if (default_slot) default_slot.d(detaching);
+    			run_all(dispose);
+    		}
+    	};
+    }
+
+    function instance($$self, $$props, $$invalidate) {
+    	const dispatch = createEventDispatcher();
+
+      //   export let country;
+
+    	let { $$slots = {}, $$scope } = $$props;
+
+    	function click_handler() {
+    		return dispatch('close');
+    	}
+
+    	function click_handler_1() {
+    		return dispatch('close');
+    	}
+
+    	$$self.$set = $$props => {
+    		if ('$$scope' in $$props) $$invalidate('$$scope', $$scope = $$props.$$scope);
+    	};
+
+    	return {
+    		dispatch,
+    		click_handler,
+    		click_handler_1,
+    		$$slots,
+    		$$scope
+    	};
+    }
+
+    class Modal extends SvelteComponentDev {
+    	constructor(options) {
+    		super(options);
+    		init(this, options, instance, create_fragment, safe_not_equal, []);
+    	}
+    }
 
     /* src/App.svelte generated by Svelte v3.6.8 */
 
-    const file = "src/App.svelte";
+    const file$1 = "src/App.svelte";
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = Object.create(ctx);
@@ -8800,8 +8351,8 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (83:8) {#if country.filename !== '' && country.filename !== 'no image'}
-    function create_if_block(ctx) {
+    // (76:8) {#if country.filename !== '' && country.filename !== 'no image'}
+    function create_if_block_1(ctx) {
     	var img, img_src_value, img_alt_value;
 
     	return {
@@ -8811,7 +8362,7 @@ var app = (function () {
     			attr(img, "alt", img_alt_value = ctx.country.name);
     			set_style(img, "width", "32px");
     			set_style(img, "height", "32px");
-    			add_location(img, file, 83, 10, 2424);
+    			add_location(img, file$1, 76, 10, 2158);
     		},
 
     		m: function mount(target, anchor) {
@@ -8828,14 +8379,14 @@ var app = (function () {
     	};
     }
 
-    // (76:4) {#each tiles as country}
+    // (68:4) {#each tiles as country}
     function create_each_block(ctx) {
     	var grid_item, t, grid_item_id_value, grid_item_class_value, dispose;
 
-    	var if_block = (ctx.country.filename !== '' && ctx.country.filename !== 'no image') && create_if_block(ctx);
+    	var if_block = (ctx.country.filename !== '' && ctx.country.filename !== 'no image') && create_if_block_1(ctx);
 
-    	function mouseover_handler(...args) {
-    		return ctx.mouseover_handler(ctx, ...args);
+    	function click_handler(...args) {
+    		return ctx.click_handler(ctx, ...args);
     	}
 
     	return {
@@ -8844,9 +8395,13 @@ var app = (function () {
     			if (if_block) if_block.c();
     			t = space();
     			set_custom_element_data(grid_item, "id", grid_item_id_value = ctx.country.id);
-    			set_custom_element_data(grid_item, "class", grid_item_class_value = "" + (ctx.selected === ctx.country ? 'selected' : 'not-selected') + "\n        " + (ctx.country.filename !== 'no image' ? 'country' : 'unknown-country') + " svelte-13wiv3p");
-    			add_location(grid_item, file, 76, 6, 2074);
-    			dispose = listen(grid_item, "mouseover", mouseover_handler);
+    			set_custom_element_data(grid_item, "class", grid_item_class_value = "" + (ctx.selected === ctx.country ? 'selected' : 'not-selected') + "\n        " + (ctx.country.filename !== 'no image' ? 'country' : 'unknown-country') + " svelte-nf4fws");
+    			add_location(grid_item, file$1, 68, 6, 1722);
+
+    			dispose = [
+    				listen(grid_item, "click", click_handler),
+    				listen(grid_item, "click", ctx.click_handler_1)
+    			];
     		},
 
     		m: function mount(target, anchor) {
@@ -8861,7 +8416,7 @@ var app = (function () {
     				if (if_block) {
     					if_block.p(changed, ctx);
     				} else {
-    					if_block = create_if_block(ctx);
+    					if_block = create_if_block_1(ctx);
     					if_block.c();
     					if_block.m(grid_item, t);
     				}
@@ -8870,7 +8425,7 @@ var app = (function () {
     				if_block = null;
     			}
 
-    			if ((changed.selected) && grid_item_class_value !== (grid_item_class_value = "" + (ctx.selected === ctx.country ? 'selected' : 'not-selected') + "\n        " + (ctx.country.filename !== 'no image' ? 'country' : 'unknown-country') + " svelte-13wiv3p")) {
+    			if ((changed.selected) && grid_item_class_value !== (grid_item_class_value = "" + (ctx.selected === ctx.country ? 'selected' : 'not-selected') + "\n        " + (ctx.country.filename !== 'no image' ? 'country' : 'unknown-country') + " svelte-nf4fws")) {
     				set_custom_element_data(grid_item, "class", grid_item_class_value);
     			}
     		},
@@ -8881,13 +8436,176 @@ var app = (function () {
     			}
 
     			if (if_block) if_block.d();
-    			dispose();
+    			run_all(dispose);
     		}
     	};
     }
 
-    function create_fragment(ctx) {
-    	var div, grid_container;
+    // (87:0) {#if showModal}
+    function create_if_block(ctx) {
+    	var current;
+
+    	var modal = new Modal({
+    		props: {
+    		$$slots: {
+    		default: [create_default_slot],
+    		header: [create_header_slot]
+    	},
+    		$$scope: { ctx }
+    	},
+    		$$inline: true
+    	});
+    	modal.$on("close", ctx.close_handler);
+
+    	return {
+    		c: function create() {
+    			modal.$$.fragment.c();
+    		},
+
+    		m: function mount(target, anchor) {
+    			mount_component(modal, target, anchor);
+    			current = true;
+    		},
+
+    		p: function update(changed, ctx) {
+    			var modal_changes = {};
+    			if (changed.$$scope || changed.selected) modal_changes.$$scope = { changed, ctx };
+    			modal.$set(modal_changes);
+    		},
+
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(modal.$$.fragment, local);
+
+    			current = true;
+    		},
+
+    		o: function outro(local) {
+    			transition_out(modal.$$.fragment, local);
+    			current = false;
+    		},
+
+    		d: function destroy(detaching) {
+    			destroy_component(modal, detaching);
+    		}
+    	};
+    }
+
+    // (89:4) <h2 slot="header">
+    function create_header_slot(ctx) {
+    	var h2, t0_value = ctx.selected.name, t0, t1, small, em, t3;
+
+    	return {
+    		c: function create() {
+    			h2 = element("h2");
+    			t0 = text(t0_value);
+    			t1 = space();
+    			small = element("small");
+    			em = element("em");
+    			em.textContent = "adjective";
+    			t3 = text("\n        mod·al \\ˈmō-dəl\\");
+    			add_location(em, file$1, 91, 8, 2502);
+    			add_location(small, file$1, 90, 6, 2486);
+    			attr(h2, "slot", "header");
+    			add_location(h2, file$1, 88, 4, 2439);
+    		},
+
+    		m: function mount(target, anchor) {
+    			insert(target, h2, anchor);
+    			append(h2, t0);
+    			append(h2, t1);
+    			append(h2, small);
+    			append(small, em);
+    			append(small, t3);
+    		},
+
+    		p: function update(changed, ctx) {
+    			if ((changed.selected) && t0_value !== (t0_value = ctx.selected.name)) {
+    				set_data(t0, t0_value);
+    			}
+    		},
+
+    		d: function destroy(detaching) {
+    			if (detaching) {
+    				detach(h2);
+    			}
+    		}
+    	};
+    }
+
+    // (88:2) <Modal on:close={() => (showModal = false)}>
+    function create_default_slot(ctx) {
+    	var t0, ol, li0, t2, li1, t4, li2, t6, li3, t8, li4, t10, li5, t12, a;
+
+    	return {
+    		c: function create() {
+    			t0 = space();
+    			ol = element("ol");
+    			li0 = element("li");
+    			li0.textContent = "of or relating to modality in logic";
+    			t2 = space();
+    			li1 = element("li");
+    			li1.textContent = "containing provisions as to the mode of procedure or the manner of\n        taking effect —used of a contract or legacy";
+    			t4 = space();
+    			li2 = element("li");
+    			li2.textContent = "of or relating to a musical mode";
+    			t6 = space();
+    			li3 = element("li");
+    			li3.textContent = "of or relating to structure as opposed to substance";
+    			t8 = space();
+    			li4 = element("li");
+    			li4.textContent = "of, relating to, or constituting a grammatical form or category\n        characteristically indicating predication";
+    			t10 = space();
+    			li5 = element("li");
+    			li5.textContent = "of or relating to a statistical mode";
+    			t12 = space();
+    			a = element("a");
+    			a.textContent = "merriam-webster.com";
+    			add_location(li0, file$1, 97, 6, 2611);
+    			add_location(li1, file$1, 98, 6, 2662);
+    			add_location(li2, file$1, 102, 6, 2812);
+    			add_location(li3, file$1, 103, 6, 2860);
+    			add_location(li4, file$1, 104, 6, 2927);
+    			add_location(li5, file$1, 108, 6, 3072);
+    			attr(ol, "class", "definition-list");
+    			add_location(ol, file$1, 96, 4, 2576);
+    			attr(a, "href", "https://www.merriam-webster.com/dictionary/modal");
+    			add_location(a, file$1, 111, 4, 3133);
+    		},
+
+    		m: function mount(target, anchor) {
+    			insert(target, t0, anchor);
+    			insert(target, ol, anchor);
+    			append(ol, li0);
+    			append(ol, t2);
+    			append(ol, li1);
+    			append(ol, t4);
+    			append(ol, li2);
+    			append(ol, t6);
+    			append(ol, li3);
+    			append(ol, t8);
+    			append(ol, li4);
+    			append(ol, t10);
+    			append(ol, li5);
+    			insert(target, t12, anchor);
+    			insert(target, a, anchor);
+    		},
+
+    		p: noop,
+
+    		d: function destroy(detaching) {
+    			if (detaching) {
+    				detach(t0);
+    				detach(ol);
+    				detach(t12);
+    				detach(a);
+    			}
+    		}
+    	};
+    }
+
+    function create_fragment$1(ctx) {
+    	var div, grid_container, t, if_block_anchor, current;
 
     	var each_value = tiles;
 
@@ -8897,6 +8615,8 @@ var app = (function () {
     		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
     	}
 
+    	var if_block = (ctx.showModal) && create_if_block(ctx);
+
     	return {
     		c: function create() {
     			div = element("div");
@@ -8905,10 +8625,14 @@ var app = (function () {
     			for (var i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].c();
     			}
-    			set_custom_element_data(grid_container, "class", "country-row svelte-13wiv3p");
-    			add_location(grid_container, file, 74, 2, 2002);
-    			attr(div, "class", "centered svelte-13wiv3p");
-    			add_location(div, file, 73, 0, 1977);
+
+    			t = space();
+    			if (if_block) if_block.c();
+    			if_block_anchor = empty();
+    			set_custom_element_data(grid_container, "class", "country-row svelte-nf4fws");
+    			add_location(grid_container, file$1, 66, 2, 1650);
+    			attr(div, "class", "centered svelte-nf4fws");
+    			add_location(div, file$1, 65, 0, 1625);
     		},
 
     		l: function claim(nodes) {
@@ -8922,6 +8646,11 @@ var app = (function () {
     			for (var i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].m(grid_container, null);
     			}
+
+    			insert(target, t, anchor);
+    			if (if_block) if_block.m(target, anchor);
+    			insert(target, if_block_anchor, anchor);
+    			current = true;
     		},
 
     		p: function update(changed, ctx) {
@@ -8945,10 +8674,36 @@ var app = (function () {
     				}
     				each_blocks.length = each_value.length;
     			}
+
+    			if (ctx.showModal) {
+    				if (if_block) {
+    					if_block.p(changed, ctx);
+    					transition_in(if_block, 1);
+    				} else {
+    					if_block = create_if_block(ctx);
+    					if_block.c();
+    					transition_in(if_block, 1);
+    					if_block.m(if_block_anchor.parentNode, if_block_anchor);
+    				}
+    			} else if (if_block) {
+    				group_outros();
+    				transition_out(if_block, 1, 1, () => {
+    					if_block = null;
+    				});
+    				check_outros();
+    			}
     		},
 
-    		i: noop,
-    		o: noop,
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(if_block);
+    			current = true;
+    		},
+
+    		o: function outro(local) {
+    			transition_out(if_block);
+    			current = false;
+    		},
 
     		d: function destroy(detaching) {
     			if (detaching) {
@@ -8956,11 +8711,21 @@ var app = (function () {
     			}
 
     			destroy_each(each_blocks, detaching);
+
+    			if (detaching) {
+    				detach(t);
+    			}
+
+    			if (if_block) if_block.d(detaching);
+
+    			if (detaching) {
+    				detach(if_block_anchor);
+    			}
     		}
     	};
     }
 
-    function instance($$self, $$props, $$invalidate) {
+    function instance$1($$self, $$props, $$invalidate) {
     	const rows = Array.from(new Set(tiles.map(el => el.row)));
       const columns = Array.from(new Set(tiles.map(el => el.column)));
 
@@ -8968,29 +8733,40 @@ var app = (function () {
 
       const selectCountry = function(el, country) {
         $$invalidate('selected', selected = country);
-        // el.fromElement.scrollIntoView({
-        //   behavior: "smooth",
-        //   block: "end",
-        //   inline: "nearest"
-        // });
-        // console.log(el);
       };
 
-    	function mouseover_handler({ country }, el) {
+      let showModal = false;
+
+    	function click_handler({ country }, el) {
     		return selectCountry(el, country);
+    	}
+
+    	function click_handler_1() {
+    		const $$result = (selected.name != '' ? (showModal = true) : (showModal = false));
+    		$$invalidate('showModal', showModal);
+    		return $$result;
+    	}
+
+    	function close_handler() {
+    		const $$result = (showModal = false);
+    		$$invalidate('showModal', showModal);
+    		return $$result;
     	}
 
     	return {
     		selected,
     		selectCountry,
-    		mouseover_handler
+    		showModal,
+    		click_handler,
+    		click_handler_1,
+    		close_handler
     	};
     }
 
     class App extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment, safe_not_equal, []);
+    		init(this, options, instance$1, create_fragment$1, safe_not_equal, []);
     	}
     }
 

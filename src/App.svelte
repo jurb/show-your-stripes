@@ -8,23 +8,19 @@
 
   const selectCountry = function(el, country) {
     selected = country;
-    // el.fromElement.scrollIntoView({
-    //   behavior: "smooth",
-    //   block: "end",
-    //   inline: "nearest"
-    // });
-    // console.log(el);
   };
+
+  import Modal from "./Modal.svelte";
+
+  let showModal = false;
 </script>
 
 <style>
-  /* 10px border */
-
   .centered {
     display: flex;
-    /* flex-wrap: wrap; Optional. only if you want the items to wrap */
-    justify-content: center; /* For horizontal alignment */
-    align-items: center; /* For vertical alignment */
+    position: relative;
+    justify-content: center;
+    align-items: center;
   }
 
   .country-row {
@@ -34,6 +30,7 @@
     grid-gap: 3px;
     border: 1px solid rgba(0, 0, 0, 0.1);
   }
+
   @media all and (-ms-high-contrast: none) {
     .country-row {
       display: -ms-grid;
@@ -63,20 +60,16 @@
 
   .selected {
     border: 1px solid rgba(0, 0, 0, 0.1);
-    /* position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%); */
   }
 </style>
 
-<!-- <p>sdfsdf {selected.name}</p> -->
 <div class="centered">
   <grid-container class="country-row">
     {#each tiles as country}
       <grid-item
         id={country.id}
-        on:mouseover={el => selectCountry(el, country)}
+        on:click={el => selectCountry(el, country)}
+        on:click={() => (selected.name != '' ? (showModal = true) : (showModal = false))}
         class="{selected === country ? 'selected' : 'not-selected'}
         {country.filename !== 'no image' ? 'country' : 'unknown-country'}">
         <!-- {country.name} -->
@@ -91,8 +84,33 @@
   </grid-container>
 </div>
 
-<!-- <p>selected: {selected.name}</p> -->
+{#if showModal}
+  <Modal on:close={() => (showModal = false)}>
+    <h2 slot="header">
+      {selected.name}
+      <small>
+        <em>adjective</em>
+        mod·al \ˈmō-dəl\
+      </small>
+    </h2>
 
-<!-- <p>rows: {rows}</p> -->
+    <ol class="definition-list">
+      <li>of or relating to modality in logic</li>
+      <li>
+        containing provisions as to the mode of procedure or the manner of
+        taking effect —used of a contract or legacy
+      </li>
+      <li>of or relating to a musical mode</li>
+      <li>of or relating to structure as opposed to substance</li>
+      <li>
+        of, relating to, or constituting a grammatical form or category
+        characteristically indicating predication
+      </li>
+      <li>of or relating to a statistical mode</li>
+    </ol>
 
-<!-- <p>columns: {columns}</p> -->
+    <a href="https://www.merriam-webster.com/dictionary/modal">
+      merriam-webster.com
+    </a>
+  </Modal>
+{/if}
