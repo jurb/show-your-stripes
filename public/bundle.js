@@ -8195,7 +8195,7 @@ var app = (function () {
     const get_header_slot_context = () => ({});
 
     function create_fragment(ctx) {
-    	var div0, t0, div1, t1, hr0, t2, t3, hr1, t4, button, current, dispose;
+    	var div0, t0, div1, t1, t2, button, current, dispose;
 
     	const header_slot_1 = ctx.$$slots.header;
     	const header_slot = create_slot(header_slot_1, ctx, get_header_slot_context);
@@ -8211,23 +8211,16 @@ var app = (function () {
 
     			if (header_slot) header_slot.c();
     			t1 = space();
-    			hr0 = element("hr");
-    			t2 = space();
 
     			if (default_slot) default_slot.c();
-    			t3 = space();
-    			hr1 = element("hr");
-    			t4 = space();
+    			t2 = space();
     			button = element("button");
     			button.textContent = "close modal";
     			attr(div0, "class", "modal-background svelte-m4xiuc");
     			add_location(div0, file, 37, 0, 620);
 
-    			add_location(hr0, file, 41, 2, 736);
-
-    			add_location(hr1, file, 43, 2, 756);
     			attr(button, "class", "svelte-m4xiuc");
-    			add_location(button, file, 45, 2, 766);
+    			add_location(button, file, 43, 2, 748);
     			attr(div1, "class", "modal svelte-m4xiuc");
     			add_location(div1, file, 39, 0, 689);
 
@@ -8254,16 +8247,12 @@ var app = (function () {
     			}
 
     			append(div1, t1);
-    			append(div1, hr0);
-    			append(div1, t2);
 
     			if (default_slot) {
     				default_slot.m(div1, null);
     			}
 
-    			append(div1, t3);
-    			append(div1, hr1);
-    			append(div1, t4);
+    			append(div1, t2);
     			append(div1, button);
     			current = true;
     		},
@@ -8362,7 +8351,7 @@ var app = (function () {
     			attr(img, "alt", img_alt_value = ctx.country.name);
     			set_style(img, "width", "32px");
     			set_style(img, "height", "32px");
-    			add_location(img, file$1, 76, 10, 2158);
+    			add_location(img, file$1, 76, 10, 2193);
     		},
 
     		m: function mount(target, anchor) {
@@ -8493,35 +8482,24 @@ var app = (function () {
 
     // (89:4) <h2 slot="header">
     function create_header_slot(ctx) {
-    	var h2, t0_value = ctx.selected.name, t0, t1, small, em, t3;
+    	var h2, t_value = ctx.selected.name, t;
 
     	return {
     		c: function create() {
     			h2 = element("h2");
-    			t0 = text(t0_value);
-    			t1 = space();
-    			small = element("small");
-    			em = element("em");
-    			em.textContent = "adjective";
-    			t3 = text("\n        mod·al \\ˈmō-dəl\\");
-    			add_location(em, file$1, 91, 8, 2502);
-    			add_location(small, file$1, 90, 6, 2486);
+    			t = text(t_value);
     			attr(h2, "slot", "header");
-    			add_location(h2, file$1, 88, 4, 2439);
+    			add_location(h2, file$1, 88, 4, 2474);
     		},
 
     		m: function mount(target, anchor) {
     			insert(target, h2, anchor);
-    			append(h2, t0);
-    			append(h2, t1);
-    			append(h2, small);
-    			append(small, em);
-    			append(small, t3);
+    			append(h2, t);
     		},
 
     		p: function update(changed, ctx) {
-    			if ((changed.selected) && t0_value !== (t0_value = ctx.selected.name)) {
-    				set_data(t0, t0_value);
+    			if ((changed.selected) && t_value !== (t_value = ctx.selected.name)) {
+    				set_data(t, t_value);
     			}
     		},
 
@@ -8535,70 +8513,37 @@ var app = (function () {
 
     // (88:2) <Modal on:close={() => (showModal = false)}>
     function create_default_slot(ctx) {
-    	var t0, ol, li0, t2, li1, t4, li2, t6, li3, t8, li4, t10, li5, t12, a;
+    	var t, img, img_src_value, img_alt_value;
 
     	return {
     		c: function create() {
-    			t0 = space();
-    			ol = element("ol");
-    			li0 = element("li");
-    			li0.textContent = "of or relating to modality in logic";
-    			t2 = space();
-    			li1 = element("li");
-    			li1.textContent = "containing provisions as to the mode of procedure or the manner of\n        taking effect —used of a contract or legacy";
-    			t4 = space();
-    			li2 = element("li");
-    			li2.textContent = "of or relating to a musical mode";
-    			t6 = space();
-    			li3 = element("li");
-    			li3.textContent = "of or relating to structure as opposed to substance";
-    			t8 = space();
-    			li4 = element("li");
-    			li4.textContent = "of, relating to, or constituting a grammatical form or category\n        characteristically indicating predication";
-    			t10 = space();
-    			li5 = element("li");
-    			li5.textContent = "of or relating to a statistical mode";
-    			t12 = space();
-    			a = element("a");
-    			a.textContent = "merriam-webster.com";
-    			add_location(li0, file$1, 97, 6, 2611);
-    			add_location(li1, file$1, 98, 6, 2662);
-    			add_location(li2, file$1, 102, 6, 2812);
-    			add_location(li3, file$1, 103, 6, 2860);
-    			add_location(li4, file$1, 104, 6, 2927);
-    			add_location(li5, file$1, 108, 6, 3072);
-    			attr(ol, "class", "definition-list");
-    			add_location(ol, file$1, 96, 4, 2576);
-    			attr(a, "href", "https://www.merriam-webster.com/dictionary/modal");
-    			add_location(a, file$1, 111, 4, 3133);
+    			t = space();
+    			img = element("img");
+    			attr(img, "src", img_src_value = "./static/" + ctx.selected.filename + ".png");
+    			attr(img, "alt", img_alt_value = "show your stripes image of " + ctx.selected.country);
+    			set_style(img, "width", "100%");
+    			add_location(img, file$1, 89, 4, 2517);
     		},
 
     		m: function mount(target, anchor) {
-    			insert(target, t0, anchor);
-    			insert(target, ol, anchor);
-    			append(ol, li0);
-    			append(ol, t2);
-    			append(ol, li1);
-    			append(ol, t4);
-    			append(ol, li2);
-    			append(ol, t6);
-    			append(ol, li3);
-    			append(ol, t8);
-    			append(ol, li4);
-    			append(ol, t10);
-    			append(ol, li5);
-    			insert(target, t12, anchor);
-    			insert(target, a, anchor);
+    			insert(target, t, anchor);
+    			insert(target, img, anchor);
     		},
 
-    		p: noop,
+    		p: function update(changed, ctx) {
+    			if ((changed.selected) && img_src_value !== (img_src_value = "./static/" + ctx.selected.filename + ".png")) {
+    				attr(img, "src", img_src_value);
+    			}
+
+    			if ((changed.selected) && img_alt_value !== (img_alt_value = "show your stripes image of " + ctx.selected.country)) {
+    				attr(img, "alt", img_alt_value);
+    			}
+    		},
 
     		d: function destroy(detaching) {
     			if (detaching) {
-    				detach(t0);
-    				detach(ol);
-    				detach(t12);
-    				detach(a);
+    				detach(t);
+    				detach(img);
     			}
     		}
     	};
@@ -8742,7 +8687,7 @@ var app = (function () {
     	}
 
     	function click_handler_1() {
-    		const $$result = (selected.name != '' ? (showModal = true) : (showModal = false));
+    		const $$result = (selected.name != '' && selected.filename != 'no image' ? (showModal = true) : (showModal = false));
     		$$invalidate('showModal', showModal);
     		return $$result;
     	}

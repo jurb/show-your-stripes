@@ -39,9 +39,7 @@
 
 <div class="modal">
   <slot name="header" />
-  <hr />
   <slot />
-  <hr />
 
   <button on:click={() => dispatch('close')}>close modal</button>
 </div>
